@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 import seaborn as sns
 from bs4 import BeautifulSoup
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 headers = {"User-Agent": "Jan D. <jan.d@correlaid.org>"}
 
@@ -22,10 +22,8 @@ def fetch_ags() -> pd.DataFrame:
     response = requests.get(url=url, headers=headers)
     # parse HTML using BeautifulSoup
     soup = BeautifulSoup(markup=response.text, features="html.parser")
-    # find all table tags
-    table = soup.find(name="table")
     # parse table headers by identifying th-tag
-    table_headers = [th.text for th in table.find(name="thead").find_all("th")]
+    table_headers = [th.text for th in soup.find(name="thead").find_all("th")]
     # initialize empty array
     rows = []
     # loop over rows and extract values
@@ -63,7 +61,7 @@ def fetch_incidence(ags: str) -> pd.DataFrame:
     return df_incidences
 
 
-def fetch_weather_data(id_: str, end_date: date) -> pd.DataFrame:
+def fetch_weather_data(id_: str, end_date: date) -> list[dict]:
     """
     Fetch weather data from www.wetterkontor.de. Always returns data for the last 8 weeks.
 
@@ -71,8 +69,8 @@ def fetch_weather_data(id_: str, end_date: date) -> pd.DataFrame:
     :type id_: str
     :param end_date: Last date of the time period
     :type end_date: date
-    :return: DataFrame including weather data for each day
-    :rtype: pd.DataFrame
+    :return: List of dictionaries including weather data for each day
+    :rtype: list[dict]
     """
     # define base url
     url = "https://www.wetterkontor.de/de/wetter/deutschland/rueckblick.asp"
@@ -101,6 +99,28 @@ def fetch_weather_data(id_: str, end_date: date) -> pd.DataFrame:
                 "max_temperature": float(columns[2].text.replace(",", ".")),
                 "avg_temperature": float(columns[3].text.replace(",", ".")),
             })
+    return values
+
+
+def fetch_weather_data_time_period(id_: str, start_date: date, end_date: date) -> pd.DataFrame:
+    """
+    Fetch weather data for a given time period using fetch_weather_data function.
+
+    :param id_: Id of the weather station
+    :type id_: str
+    :param start_date: First date of the time period
+    :type start_date: date
+    :param end_date: Last date of the time period
+    :type end_date: date
+    :return: DataFrame including weather data for each day
+    :rtype: pd.DataFrame
+    """
+    # initialize empty list
+    values = []
+    # execute until data for each data are available
+    while start_date not in [e["date"] for e in values]:
+        end_date = min([e["date"] for e in values]) - timedelta(days=1) if len(values) else end_date
+        values += fetch_weather_data(id_=id_, end_date=end_date)
     # transform data into a data frame
     df = pd.DataFrame.from_records(data=values)
     # set index to date to ease merging
@@ -108,15 +128,26 @@ def fetch_weather_data(id_: str, end_date: date) -> pd.DataFrame:
     return df
 
 
+# fetch ags, incidences and weather data
+df_ags = fetch_ags()
 df_incidences = fetch_incidence(ags="16053")
-df_weather = fetch_weather_data(id_="M552",
-                                end_date=date.fromisoformat("2021-03-31"))
+df_weather = fetch_weather_data_time_period(id_="M552",
+                                            start_date=date.fromisoformat("2020-03-20"),
+                                            end_date=date.fromisoformat("2021-06-19"))
+# save data frames to CSV
+df_ags.to_csv(path_or_buf="data/ags.csv")
+df_incidences.to_csv(path_or_buf="data/incidences.csv")
+df_weather.to_csv(path_or_buf="data/weather.csv")
 
-g = sns.relplot(x="date", y="incidence", kind="line", data=df_incidences)
-g.fig.autofmt_xdate()
-
+# join incidences and weather data
 df = df_weather.merge(right=df_incidences, right_index=True, left_index=True)
 df = df.reset_index()
 
-sns.lineplot(x='date', y='value', hue='variable',
-             data=pd.melt(df, ["date"]))
+# add days
+df["day"] = list(range(1, len(df) + 1))[::-1]
+
+# plot
+sns.lineplot(x="date",
+             y="value",
+             hue="variable",
+             data=pd.melt(frame=df, id_vars=["date"]))
