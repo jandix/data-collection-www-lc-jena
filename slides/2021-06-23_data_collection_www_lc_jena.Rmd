@@ -1,0 +1,200 @@
+---
+title: "Data Collection in the WWW"
+subtitle: "Local CorrelAid Chapter Jena"
+author: Jan Dix jan.d@correlaid.org
+date: June 23rd, 2005
+output:
+  ioslides_presentation:
+    widescreen: true
+    css: styles.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Content
+
+1. Why Web Scraping?
+2. HTML
+3. JSON
+4. Ethics in Web Scraping
+6. Coding
+
+## Why Web Scraping?
+
+- Access information from the web that is otherwise not available
+- Access information automatically to avoid manual copying
+- Transform semi-structured data into your desired format
+
+### Real-World Examples:
+
+- Collect data for a research project including bachelor or master theses
+- Collect data to support an NGO
+- Status of a government service
+- Status of your personal website
+
+## What is HTML? {.smaller}
+
+```html
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Example Website</title>
+  <meta name="description" content="This is an example website for the purpose of demonstration.">
+  <meta name="author" content="CorrelAid">
+
+  <link rel="stylesheet" href="css/styles.css">
+
+</head>
+
+<body>
+  <h1 id="article-heading">Hello World</h1>
+  <p span="blue">
+    Biggs, Wedge, let's close it up. We're going in. We're going in full throttle. 
+    Right with you, boss. Luke, at that speed will you be able to pull out in time? 
+  </p>
+
+  <script src="js/scripts.js"></script>
+</body>
+</html>
+```
+
+## Basic HTML Elements 1: Text
+
+```html
+<h1>Largest Heading</h1>
+<h6>Smallest Heading</h6>
+<p>Paragraph</p>
+```
+
+<h1 class="large-h1">Largest Heading</h1><br />
+<h6 class="small-h1">Smallest Heading</h6><br />
+<p class="small-paragraph">Paragraph</p><br />
+
+## Basic HTML Elements 2: Styling
+
+```html
+<b>Bold</b>
+<i>Italic</i>
+<span class="flipped">I'am supposed to be red because my class says so.</span>
+```
+
+<b>Bold</b><br />
+*Italic*<br />
+<span class="red">I'am supposed to be red because my class says so.</span>
+
+## Basic HTML Elements 3:Links
+
+```html
+<a href="https://correlaid.org" target="_blank">I link to CA and open in a new tab.</a>
+```
+
+<a href="https://correlaid.org" target="_blank">I link to CA and open in a new tab.</a>
+
+
+## Structuring Elements
+
+### Division
+
+```html
+<div></div>
+```
+
+### Other Elements
+
+```html
+<head></head>
+<footer></footer>
+<article></article>
+```
+
+## HTML Tables
+
+
+| City     | Founded |
+| -------- | ------- |
+| Jena     | 2021    |
+| Konstanz | 2016    |
+
+## HTML Tables: Code {.smaller}
+
+```html
+<table>
+  <thead>
+    <tr>
+      <th>City</th>
+      <th>Founded (Year)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Jena</td>
+      <td>2021</td>
+    </tr>
+    <tr>
+      <td>Konstanz</td>
+      <td>2016</td>
+    </tr>
+  </tbody>
+</table>
+```
+
+## Attributes
+
+### Id
+
+- Unique ID for a given element
+- Identify elements (using JavaScript)
+
+```html
+<h1 id="article-heading">I am the article heading.</h1>
+```
+
+### Class
+
+- Not necessarily unique
+- Mostly used for styling
+
+```html
+<p class="blue smaller">I am a blue and small paragraph.</p>
+```
+
+## What is JSON? {.smaller}
+
+```json
+{
+  "name": "CorrelAid e.V."
+  "localChapters": [
+    { "city": "Jena", "founded": 2021 },
+    { "city": "Konstanz", "founded": 2016 }
+  ]
+}
+```
+
+### Valid data types
+
+- String (str): `{"name": "Jane"}`
+- Number (int/float): `{"pi": 3.1415}`
+- Object (dict): `{"localchapter": {"location": "Jena", "year": 2021}}`
+- Array (list): `{"cities": ["Jena", "Konstanz", "Köln", "Bochum"]}`
+- Boolean (bool): `{"isValid": true}`
+- Null (None): `{"age": null}` 
+
+## Ethics in Web Scraping
+
+- If you have a public API that provides the data I’m looking for, I’ll use it and avoid scraping all together.
+- I will always provide a User Agent string that makes my intentions clear and provides a way for you to contact me with questions or concerns.
+- I will request data at a reasonable rate.
+- I will only save the data I absolutely need from your page. 
+- I will respect any content I do keep. I’ll never pass it off as my own.
+- I will scrape for the purpose of creating new value from the data, not to duplicate it.
+
+
+<br /><br />*Source:* James Densmore. (2021-07-23). [Ethics in Web Scraping](https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01)
+
+
+
