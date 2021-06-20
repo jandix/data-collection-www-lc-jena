@@ -58,7 +58,7 @@ def fetch_incidence(ags: str) -> pd.DataFrame:
                   e in data[ags]["history"]]
     # transform data into a data frame
     df_incidences = pd.DataFrame.from_records(data=incidences)
-    # set index to date
+    # set index to date to ease merging
     df_incidences = df_incidences.set_index(keys="date")
     return df_incidences
 
@@ -101,8 +101,9 @@ def fetch_weather_data(id_: str, end_date: date) -> pd.DataFrame:
                 "max_temperature": float(columns[2].text.replace(",", ".")),
                 "avg_temperature": float(columns[3].text.replace(",", ".")),
             })
-
+    # transform data into a data frame
     df = pd.DataFrame.from_records(data=values)
+    # set index to date to ease merging
     df = df.set_index(keys="date")
     return df
 
