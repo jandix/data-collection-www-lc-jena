@@ -1,7 +1,7 @@
 # load dependencies
 import requests
 import pandas as pd
-import seaborn as sns
+import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 from datetime import date, datetime, timedelta
 
@@ -128,6 +128,52 @@ def fetch_weather_data_time_period(id_: str, start_date: date, end_date: date) -
     return df
 
 
+def plot_two_axes(df: pd.DataFrame,
+                  x: str,
+                  y1: str,
+                  y2: str,
+                  y1_color: str = "#92de3f",
+                  y2_color: str = "#3862a2",
+                  font_color: str = "#444444") -> None:
+    """
+    Plot two variables with the same x-axis and use two different axes.
+
+    :param df: DataFrame to use to plot
+    :type df: pd.DataFrame
+    :param x: X-axis column
+    :type x: str
+    :param y1: Y1-axis column
+    :type y1: str
+    :param y2: Y2-axis column
+    :type y2: str
+    :param y1_color: Color of y1-line
+    :type y1_color: str
+    :param y2_color: Color of y2-line
+    :type y2_color: str
+    :param font_color: Font color
+    :type font_color: str
+    :return: None
+    :rtype: None
+    """
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel(xlabel=x.capitalize(), color=font_color)
+    ax1.set_ylabel(ylabel=y1.capitalize(), color=y1_color)
+    ax1.plot(df[x], df[y1], color=y1_color)
+    ax1.tick_params(axis="y", labelcolor=y1_color)
+    ax1.tick_params(axis="x", labelcolor=font_color)
+    # instantiate a second axes that shares the same x-axis
+    ax2 = ax1.twinx()
+    ax2.set_ylabel(ylabel=y2.capitalize(), color=y2_color)
+    ax2.plot(df[x], df[y2], color=y2_color)
+    ax2.tick_params(axis="y", labelcolor=y2_color)
+    ax2.spines["bottom"].set_color(font_color)
+    ax2.spines["top"].set_color(font_color)
+    ax2.spines["right"].set_color(font_color)
+    ax2.spines["left"].set_color(font_color)
+    fig.tight_layout()
+    plt.show()
+
+
 # fetch ags, incidences and weather data
 df_ags = fetch_ags()
 df_incidences = fetch_incidence(ags="16053")
@@ -146,8 +192,8 @@ df = df.reset_index()
 # add days
 df["day"] = list(range(1, len(df) + 1))[::-1]
 
-# plot
-sns.lineplot(x="date",
-             y="value",
-             hue="variable",
-             data=pd.melt(frame=df, id_vars=["date"]))
+# plot incidences and average temperature
+plot_two_axes(df=df, x="day", y1="incidence", y2="avg_temperature")
+
+# plot incidences and precipitation
+plot_two_axes(df=df, x="day", y1="incidence", y2="precipitation")
